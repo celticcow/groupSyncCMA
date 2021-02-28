@@ -28,60 +28,69 @@ def login_api(key, mds, domain):
 def parse_host(host_json):
     debug = 1
 
-    print(host_json['name'])
-    print(host_json['ipv4-address'])
+    print("host", end=",")
+    print(host_json['name'], end=",")
+    print(host_json['ipv4-address'], end="\n")
 
 def parse_address_range(range_json):
     debug = 1
 
-    print(range_json['name'])
-    print(range_json['ipv4-address-first'])
-    print(range_json['ipv4-address-last'])
+    print("address-range", end=",")
+    print(range_json['name'], end=",")
+    print(range_json['ipv4-address-first'], end=",")
+    print(range_json['ipv4-address-last'], end="\n")
 
 def parse_network(network_json):
     debug = 1
 
-    print(network_json['name'])
-    print(network_json['subnet4'])
-    print(network_json['subnet-mask'])
+    print("network", end=",")
+    print(network_json['name'], end=",")
+    print(network_json['subnet4'], end=",")
+    print(network_json['subnet-mask'], end="\n")
 
 def get_group_contents(mds_ip, cma_sid, group_name):
-    debug = 1
+    debug = 0
 
     # do stuff here
     try:
         group_info_response = apifunctions.api_call(mds_ip, "show-group", {"name" : group_name}, cma_sid)
 
-        print(group_info_response)
+        if(debug == 1):
+            print(group_info_response)
 
-        print("***********************************")
-        print(group_info_response['members'])
+            print("***********************************")
+            print(group_info_response['members'])
 
         for i in range(len(group_info_response['members'])):
             #print(group_info_response['members'][i])
             
-
             if(group_info_response['members'][i]['type'] == "host"):
                 parse_host(group_info_response['members'][i])
             
-            if(group_info_response['members'][i]['type'] == "network"):
+            elif(group_info_response['members'][i]['type'] == "network"):
                 parse_network(group_info_response['members'][i])
             
-            if(group_info_response['members'][i]['type'] == "address-range"):
+            elif(group_info_response['members'][i]['type'] == "address-range"):
                 parse_address_range(group_info_response['members'][i])
 
-            if(group_info_response['members'][i]['type'] == "group"):
-                print("group found", end=" ")
-                print(group_info_response['members'][i]['name'])
+            elif(group_info_response['members'][i]['type'] == "group"):
+                if(debug == 1):
+                    print("group found", end=" ")
+                    print(group_info_response['members'][i]['name'])
                 get_group_contents(mds_ip, cma_sid, group_info_response['members'][i]['name'])
-            print("\n---------")
+            
+            else:
+                print("unknown group memeber")
+                print(group_info_response['members'][i]['type'])
+                print(group_info_response['members'][i]['name'])
+            #print("\n---------")
     except:
         print("error getting group data")
         
 
 def main():
-    debug = 1
-    print("begin")
+    debug = 0
+    ##print("begin")
     mds_ip = "146.18.96.16"
     cma1 = "146.18.96.25"
 
@@ -99,7 +108,7 @@ def main():
         if(debug == 1):
             print("session id : " + sid)
 
-        get_group_contents(mds_ip, sid, "Test-Group")
+        get_group_contents(mds_ip, sid, "cute_networks")
 
         time.sleep(5)
         logout_result = apifunctions.api_call(mds_ip, "logout", {}, sid)
