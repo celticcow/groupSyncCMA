@@ -1,1 +1,3 @@
 Pull down contents of a group on a cma ... sync it to another cma
+
+step1.  group Sync grabs data and interate and output as csv
